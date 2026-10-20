@@ -1,0 +1,36 @@
+# Прод-оверлей для сервера с публичным доменом:
+#   cp .env.example .env   # задайте DOMAIN, JWT_SECRET, POSTGRES_PASSWORD
+#   docker compose -f docker-compose.yml -f deploy/docker-compose.prod.yml up -d --build
+# Наружу открыты только 80/443 (Caddy, HTTPS). API, моки и БД доступны только внутри сети Docker.
+services:
+  api:
+    ports: !reset []
+    environment:
+      ENVIRONMENT: production
+      CORS_ORIGINS: https://${DOMAIN:?Укажите DOMAIN в .env}
+      JWT_SECRET: ${JWT_SECRET:?Укажите JWT_SECRET в .env}
+  worker:
+    environment:
+      JWT_SECRET: ${JWT_SECRET:?Укажите JWT_SECRET в .env}
+    deploy:
+      replicas: 2
+  mocks:
+    ports: !reset []
+  web:
+    ports: !reset []
+  db:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Укажите POSTGRES_PASSWORD в .env}
+  caddy:
+    image: caddy:2.8.4-alpine
+    environment:
+      DOMAIN: ${DOMAIN}
+    ports: ["80:80", "443:443"]
+    volumes:
+      - ./deploy/Caddyfile:/etc/caddy/Caddyfile:ro
+      - caddy_data:/data
+    depends_on: [web]
+    restart: unless-stopped
+
+volumes:
+  caddy_data:
