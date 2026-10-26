@@ -1,0 +1,9 @@
+# HTTPS-терминация для публичного стенда. Сертификат Let's Encrypt выпускается автоматически.
+{$DOMAIN} {
+	encode gzip
+	header {
+		Strict-Transport-Security "max-age=31536000"
+		-Server
+	}
+	reverse_proxy web:8080
+}

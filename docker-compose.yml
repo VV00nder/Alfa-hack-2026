@@ -1,0 +1,100 @@
+# CreditFlow — единый воспроизводимый запуск всех компонентов:  docker compose up --build
+# Опционально локальная open-weights LLM:                       docker compose --profile ai up --build
+name: creditflow
+
+x-backend-env: &backend-env
+  DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-creditflow}:${POSTGRES_PASSWORD:-creditflow}@db:5432/${POSTGRES_DB:-creditflow}
+  JWT_SECRET: ${JWT_SECRET:-local-dev-secret-change-me-32bytes!!}
+  MOCKS_URL: http://mocks:8090
+  JWT_TTL_MINUTES: ${JWT_TTL_MINUTES:-480}
+  KEY_RATE: ${KEY_RATE:-14.0}
+  AUTO_DECISION_LIMIT: ${AUTO_DECISION_LIMIT:-10000000}
+  COMMITTEE_LIMIT: ${COMMITTEE_LIMIT:-15000000}
+  OFFER_TTL_DAYS: ${OFFER_TTL_DAYS:-14}
+  INTEGRATION_TIMEOUT_SEC: ${INTEGRATION_TIMEOUT_SEC:-3.0}
+  INTEGRATION_RETRIES: ${INTEGRATION_RETRIES:-3}
+  MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-5}
+  PIPELINE_STEP_DELAY_SEC: ${PIPELINE_STEP_DELAY_SEC:-1.5}
+  SEED_DEMO_DATA: ${SEED_DEMO_DATA:-true}
+  LLM_ENABLED: ${LLM_ENABLED:-false}
+  OLLAMA_URL: http://ollama:11434
+  LLM_MODEL: ${LLM_MODEL:-qwen2.5:1.5b-instruct}
+  CORS_ORIGINS: http://localhost:8080,http://localhost:5173
+
+services:
+  db:
+    image: postgres:16.6-alpine
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-creditflow}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-creditflow}
+      POSTGRES_DB: ${POSTGRES_DB:-creditflow}
+    volumes: [pgdata:/var/lib/postgresql/data]
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    restart: unless-stopped
+
+  mocks:
+    build: ./mocks
+    environment:
+      MOCK_LATENCY_MS: ${MOCK_LATENCY_MS:-150}
+      MOCK_FAILURE_RATE: ${MOCK_FAILURE_RATE:-0}
+    ports: ["${MOCKS_PORT:-8090}:8090"]
+    restart: unless-stopped
+
+  migrate:  # одноразовая задача: миграции Alembic + демо-данные
+    build: { context: ./backend, target: runtime }
+    command: ["python", "-m", "app.cli", "init"]
+    environment: *backend-env
+    depends_on:
+      db: { condition: service_healthy }
+      mocks: { condition: service_healthy }
+    restart: "no"
+
+  api:
+    build: { context: ./backend, target: runtime }
+    environment: *backend-env
+    ports: ["${API_PORT:-8000}:8000"]
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+  worker:  # исполнитель этапов конвейера; масштабируется: docker compose up --scale worker=3
+    build: { context: ./backend, target: runtime }
+    command: ["python", "-m", "app.cli", "worker"]
+    environment: *backend-env
+    healthcheck:
+      test: ["CMD", "python", "-c", "import os,sys,time; sys.exit(0 if time.time()-os.path.getmtime('/tmp/worker-heartbeat')<30 else 1)"]
+      interval: 10s
+      retries: 3
+    depends_on:
+      migrate: { condition: service_completed_successfully }
+    restart: unless-stopped
+
+  web:
+    build: ./frontend
+    ports: ["${WEB_PORT:-8080}:8080"]
+    depends_on:
+      api: { condition: service_healthy }
+    restart: unless-stopped
+
+  ollama:
+    profiles: ["ai"]
+    image: ollama/ollama:0.5.4
+    volumes: [ollama:/root/.ollama]
+    ports: ["11434:11434"]
+    restart: unless-stopped
+
+  ollama-pull:  # загрузка open-weights модели при первом запуске профиля ai
+    profiles: ["ai"]
+    image: ollama/ollama:0.5.4
+    environment: { OLLAMA_HOST: "http://ollama:11434" }
+    entrypoint: ["/bin/sh", "-c", "sleep 5 && ollama pull ${LLM_MODEL:-qwen2.5:1.5b-instruct}"]
+    depends_on: [ollama]
+    restart: "no"
+
+volumes:
+  pgdata:
+  ollama:
