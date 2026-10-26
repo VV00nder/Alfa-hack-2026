@@ -9,3 +9,4 @@ backend/tests/test.db
 .venv/
 .idea/
 .vscode/
+frontend/tsconfig.tsbuildinfo
