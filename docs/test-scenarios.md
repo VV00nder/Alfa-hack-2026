@@ -4,11 +4,11 @@
 
 | Уровень | Как запустить | Что проверяет |
 |---|---|---|
-| Автотесты (24) | `docker build --target test --build-context mocks=./mocks -t creditflow-test backend && docker run --rm creditflow-test` | Модель решения, автомат статусов, API-сценарии на SQLite с синхронным конвейером |
+| Автотесты (24) | `docker build --target test --build-context mocks=./mocks -t creditflow-test backend`, затем `docker run --rm creditflow-test` | Модель решения, автомат статусов, API-сценарии на SQLite с синхронным конвейером |
 | Сквозная проверка стенда | `python scripts/e2e_smoke.py` | Настоящий стенд: PostgreSQL, воркер, nginx, моки |
 | Ручные сценарии | ниже | Пользовательский опыт в веб-интерфейсе |
 
-Перед ручной проверкой: `docker compose up --build`, адрес http://localhost:8080. Для чистого прогона: `docker compose down -v && docker compose up --build`.
+Перед ручной проверкой: `docker compose up --build`, адрес http://localhost:8080. Для чистого прогона: `docker compose down -v`, затем `docker compose up --build`.
 
 ---
 

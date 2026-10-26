@@ -4,7 +4,8 @@
 **Подготовка за 10 минут до выхода:**
 
 ```bash
-docker compose down -v && docker compose up -d --build   # чистые демо-данные
+docker compose down -v                                    # чистые демо-данные
+docker compose up -d --build
 python scripts/e2e_smoke.py                               # стенд работает (потом снова down -v / up, чтобы очистить)
 ```
 

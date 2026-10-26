@@ -64,7 +64,7 @@ cloudflared tunnel --url http://localhost:8080
 |---|---|
 | Логи | `docker compose logs -f api worker` |
 | Масштабировать воркеры | `docker compose up -d --scale worker=3` |
-| Сбросить данные | `docker compose down -v && docker compose up -d` |
+| Сбросить данные | `docker compose down -v`, затем `docker compose up -d` |
 | Бэкап БД | `docker compose exec db pg_dump -U creditflow creditflow > backup.sql` |
 | Ускорить конвейер для демо | `PIPELINE_STEP_DELAY_SEC=0.5 docker compose up -d api worker` |
 | Включить LLM | `LLM_ENABLED=true docker compose --profile ai up -d` |

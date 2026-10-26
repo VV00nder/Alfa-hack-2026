@@ -80,11 +80,12 @@
 **Требования:** Docker Desktop 4.x / Docker Engine 24+ с Compose v2, 4 ГБ свободной RAM, ~3 ГБ на диске, свободные порты 8080, 8000, 8090 (меняются переменными `WEB_PORT`, `API_PORT`, `MOCKS_PORT`). Интернет нужен только для скачивания образов при первой сборке. Проект запускается из ZIP-архива GitHub без git.
 
 ```bash
-git clone <repo-url> creditflow && cd creditflow
+git clone https://github.com/VV00nder/Alfa-hack-2026.git creditflow
+cd creditflow
 docker compose up --build
 ```
 
-Через 1–3 минуты (первая сборка) откройте:
+Первая сборка занимает 5–7 минут, повторные запуски — меньше минуты. Затем откройте:
 
 | Адрес | Что это |
 |---|---|
@@ -255,7 +256,8 @@ testdata/         пример выписки по счёту (CSV)
 
 ```bash
 # юнит- и сквозные API-тесты (SQLite, синхронный конвейер, моки in-process) — 24 теста
-docker build --target test --build-context mocks=./mocks -t creditflow-test backend && docker run --rm creditflow-test
+docker build --target test --build-context mocks=./mocks -t creditflow-test backend
+docker run --rm creditflow-test
 
 # линтер
 docker run --rm creditflow-test ruff check .
