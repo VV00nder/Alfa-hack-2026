@@ -1,0 +1,432 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "CreditFlow External Systems Simulator",
+    "description": "Моки ЕГРЮЛ, ФНС, БКИ, антифрода и АБС. Все данные синтетические.",
+    "version": "1.0.0"
+  },
+  "paths": {
+    "/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/chaos": {
+      "post": {
+        "summary": "Включить имитацию сбоев источника (egrul, fns, bki, antifraud, abs, default)",
+        "operationId": "set_chaos_admin_chaos_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ChaosIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/egrul/v1/companies/{inn}": {
+      "get": {
+        "summary": "Выписка ЕГРЮЛ/ЕГРИП",
+        "operationId": "egrul_egrul_v1_companies__inn__get",
+        "parameters": [
+          {
+            "name": "inn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Inn"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/fns/v1/transparent-business/{inn}": {
+      "get": {
+        "summary": "ФНС «Прозрачный бизнес»: финансы, налоги, отметки",
+        "operationId": "fns_fns_v1_transparent_business__inn__get",
+        "parameters": [
+          {
+            "name": "inn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Inn"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/bki/v1/reports": {
+      "post": {
+        "summary": "Кредитный отчёт БКИ (требует идентификатор согласия)",
+        "operationId": "bki_bki_v1_reports_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BkiIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/antifraud/v1/check": {
+      "post": {
+        "summary": "Антифрод-проверка заявки",
+        "operationId": "antifraud_antifraud_v1_check_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AntifraudIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/abs/v1/accounts/{inn}": {
+      "get": {
+        "summary": "Счета и обороты клиента в банке (внутренняя АБС)",
+        "operationId": "accounts_abs_v1_accounts__inn__get",
+        "parameters": [
+          {
+            "name": "inn",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Inn"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/abs/v1/loans": {
+      "post": {
+        "summary": "Открытие ссудного счёта и выдача кредита (идемпотентно по application_id)",
+        "operationId": "disburse_abs_v1_loans_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LoanIn"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AntifraudIn": {
+        "properties": {
+          "inn": {
+            "type": "string",
+            "title": "Inn"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "channel": {
+            "type": "string",
+            "title": "Channel",
+            "default": "web"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inn",
+          "amount"
+        ],
+        "title": "AntifraudIn"
+      },
+      "BkiIn": {
+        "properties": {
+          "inn": {
+            "type": "string",
+            "title": "Inn"
+          },
+          "consent_id": {
+            "type": "string",
+            "title": "Consent Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "inn",
+          "consent_id"
+        ],
+        "title": "BkiIn"
+      },
+      "ChaosIn": {
+        "properties": {
+          "source": {
+            "type": "string",
+            "title": "Source",
+            "default": "default"
+          },
+          "failure_rate": {
+            "type": "number",
+            "title": "Failure Rate",
+            "default": 0.0
+          }
+        },
+        "type": "object",
+        "title": "ChaosIn"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "LoanIn": {
+        "properties": {
+          "application_id": {
+            "type": "string",
+            "title": "Application Id"
+          },
+          "inn": {
+            "type": "string",
+            "title": "Inn"
+          },
+          "amount": {
+            "type": "number",
+            "title": "Amount"
+          },
+          "rate": {
+            "type": "number",
+            "title": "Rate"
+          },
+          "term_months": {
+            "type": "integer",
+            "title": "Term Months"
+          },
+          "contract_number": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Contract Number"
+          }
+        },
+        "type": "object",
+        "required": [
+          "application_id",
+          "inn",
+          "amount",
+          "rate",
+          "term_months"
+        ],
+        "title": "LoanIn"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
